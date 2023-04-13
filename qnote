@@ -1,16 +1,19 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: sn [-f filename] note_text"
+    echo "Usage: qnote [-f filename] [-t] [note_text]"
     echo "    -f: Name the file that the note will be saved in."
     echo "    If -f option is not used, the filename will be the current date in the format yyyy-mm-dd."
+    echo "    -t: Add a timestamp to the note."
 }
 
 # Parse command-line arguments
 filename="$(date +%Y-%m-%d).md"
-while getopts "f:" opt; do
+timestamp=false
+while getopts "f:t" opt; do
     case "$opt" in
         f) filename="$OPTARG.md";;
+        t) timestamp=true;;
         *) usage; exit 1;;
     esac
 done
@@ -18,14 +21,27 @@ shift $((OPTIND-1))
 
 # Check if a note was provided
 if [ "$#" -lt 1 ]; then
-    usage
-    exit 1
+    # Read note from stdin
+    read -r -d '' note_text
+    if [ -z "$note_text" ]; then
+        usage
+        exit 1
+    fi
+else
+    # Note provided as argument
+    note_text="$@"
 fi
 
 # Create the notes directory if it doesn't exist
 mkdir -p "$HOME/quick-notes"
 
+# Add timestamp to note if requested
+if $timestamp; then
+    timestamp="$(date '+(%Y-%m-%d %H:%M:%S)')"
+    note_text="$timestamp: $note_text"
+fi
+
 # Save the note to the specified file
-echo "$@" >> "$HOME/quick-notes/$filename"
+echo "$note_text" >> "$HOME/quick-notes/$filename"
 echo "Note saved to $HOME/quick-notes/$filename"
 
