@@ -23,3 +23,9 @@ Append a quick note to "today's file" formated yyyy-mm-dd
 ```
 qnote <message>
 ```
+
+Append a note with a timestamp
+
+```
+qnote -t <message>
+```
